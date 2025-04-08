@@ -1,27 +1,29 @@
 # Imagen base liviana de Python
 FROM python:3.11-slim
 
-# Variables para evitar archivos .pyc y loguear automáticamente
+# Evitar archivos pyc y forzar logs a consola
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
-# Crear directorio de trabajo
+# Establecer el directorio de trabajo dentro del contenedor
 WORKDIR /app
 
-# Instalar dependencias del sistema
+# Instalar dependencias del sistema necesarias para psycopg2 y otros
 RUN apt-get update && apt-get install -y \
     gcc \
     libpq-dev \
     && apt-get clean
 
-# Copiar e instalar dependencias Python
+# Copiar requirements e instalar dependencias Python
 COPY requirements.txt /app/
 RUN pip install --upgrade pip && pip install -r requirements.txt
 
-# Copiar el proyecto completo y el archivo de entorno
+# Copiar todo el contenido del proyecto (incluye manage.py y settings)
+COPY . /app/
 
-# Exponer el puerto por defecto de Django
+# Exponer el puerto 8000 (usado por gunicorn)
 EXPOSE 8000
 
-# Comando por defecto (por si no se sobreescribe en docker-compose)
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+# Comando por defecto (si no se sobreescribe en Render)
+CMD ["gunicorn", "redis_mandalorian_project.wsgi:application", "--bind", "0.0.0.0:8000"]
+
