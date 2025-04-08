@@ -19,8 +19,6 @@ COPY requirements.txt /app/
 RUN pip install --upgrade pip && pip install -r requirements.txt
 
 # Copiar el proyecto completo y el archivo de entorno
-COPY . /app/
-COPY .env /app/.env
 
 # Exponer el puerto por defecto de Django
 EXPOSE 8000
