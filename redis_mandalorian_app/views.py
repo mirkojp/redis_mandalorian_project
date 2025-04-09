@@ -5,6 +5,7 @@ from django.utils.timezone import now, timedelta
 from .models import Chapter
 from .serializers import ChapterSerializer
 from .tasks import release_chapter
+from rest_framework.decorators import api_view
 
 
 # Lista todos los capítulos y permite crear uno nuevo
@@ -19,13 +20,8 @@ class ChapterDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = ChapterSerializer
 
 
-# Vista para reservar un capítulo
+@api_view(["POST"])
 def reserve_chapter(request, pk):
-    if request.method != "POST":
-        return Response(
-            {"error": "Método no permitido"}, status=status.HTTP_405_METHOD_NOT_ALLOWED
-        )
-
     chapter = get_object_or_404(Chapter, pk=pk)
     if chapter.status != "disponible":
         return Response(
@@ -35,17 +31,15 @@ def reserve_chapter(request, pk):
     chapter.status = "reservado"
     chapter.reserved_at = now()
     chapter.save()
-    release_chapter.apply_async((str(chapter.id),), countdown=240)  # 4 minutos
+
+    # Lanza la tarea de liberación en 4 minutos
+    release_chapter.apply_async((str(chapter.id),), countdown=240)
+
     return Response({"message": "Capítulo reservado por 4 minutos"})
 
 
-# Vista para confirmar el pago
+@api_view(["POST"])
 def confirm_payment(request, pk):
-    if request.method != "POST":
-        return Response(
-            {"error": "Método no permitido"}, status=status.HTTP_405_METHOD_NOT_ALLOWED
-        )
-
     chapter = get_object_or_404(Chapter, pk=pk)
     if chapter.status != "reservado":
         return Response(
@@ -55,4 +49,5 @@ def confirm_payment(request, pk):
     chapter.status = "alquilado"
     chapter.rented_until = now() + timedelta(hours=24)
     chapter.save()
+
     return Response({"message": "Capítulo alquilado por 24 horas"})
