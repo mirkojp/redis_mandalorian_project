@@ -2,7 +2,6 @@ from celery import shared_task
 from django.utils.timezone import now
 from .models import Chapter
 import logging
-
 logger = logging.getLogger(__name__)
 
 @shared_task
