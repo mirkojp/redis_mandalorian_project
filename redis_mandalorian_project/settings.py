@@ -50,7 +50,7 @@ INSTALLED_APPS = [
     "redis_mandalorian_app" 
 ]
 
-CELERY_BROKER_URL = "redis://redis:6379/0"
+CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL")
 CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
 
