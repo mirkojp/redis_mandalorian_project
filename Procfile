@@ -1,0 +1,1 @@
+worker: celery -A redis_mandalorian_project worker --loglevel=info
